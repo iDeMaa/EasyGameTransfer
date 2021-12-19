@@ -57,11 +57,27 @@ public class MainMenu extends JFrame implements WindowListener {
 		}
 
 		iniciarButton.addActionListener(v -> {
+			int ans = JOptionPane.showOptionDialog(this,
+			 "¿Seguro que desea copiar el juego al dispositivo " + comboDevices.getSelectedItem().toString() + "?",
+				"¿Está seguro?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{"Sí", "No"}, null);
+
+			if(ans == JOptionPane.NO_OPTION) {
+				return;
+			}
+
+			String pathS = "";
 			if(path.getText() != null && !path.getText().trim().equalsIgnoreCase("")) {
+				if(path.getText().indexOf("/") != -1) {
+					pathS = path.getText().replace("/", "\\");
+				}
+				if(path.getText().substring(path.getText().length()-1).equalsIgnoreCase("\\")){
+					pathS = path.getText().substring(0, path.getText().length() - 1);
+				}
+				String finalPathS = pathS;
 				Runnable runnable = () -> {
 					try {
 						iniciarButton.setEnabled(false);
-						pasarJuego(path.getText(), comboDevices.getSelectedItem().toString());
+						pasarJuego(finalPathS, comboDevices.getSelectedItem().toString());
 						iniciarButton.setEnabled(true);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -191,7 +207,7 @@ public class MainMenu extends JFrame implements WindowListener {
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		if(thread.isAlive()) {
+		if(thread != null && thread.isAlive()) {
 			thread.interrupt();
 		}
 	}
