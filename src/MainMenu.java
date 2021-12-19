@@ -26,6 +26,7 @@ public class MainMenu extends JFrame implements WindowListener {
 	private JTextArea logArea;
 	private JScrollPane scroll;
 	private JButton iniciarButton;
+	private JProgressBar progressBar1;
 	private Thread thread;
 	private final File[] roots = File.listRoots();
 	private static final StringBuilder missingList = new StringBuilder();
@@ -43,6 +44,8 @@ public class MainMenu extends JFrame implements WindowListener {
 		mainPanel.setMinimumSize(new Dimension(800, 600));
 		mainPanel.setMaximumSize(new Dimension(800, 600));
 		mainPanel.setPreferredSize(new Dimension(800, 600));
+		progressBar1.setVisible(false);
+		progressBar1.setStringPainted(true);
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(this);
@@ -65,8 +68,8 @@ public class MainMenu extends JFrame implements WindowListener {
 				return;
 			}
 
-			String pathS = "";
 			if(path.getText() != null && !path.getText().trim().equalsIgnoreCase("")) {
+				String pathS = path.getText();
 				if(path.getText().indexOf("/") != -1) {
 					pathS = path.getText().replace("/", "\\");
 				}
@@ -76,6 +79,7 @@ public class MainMenu extends JFrame implements WindowListener {
 				String finalPathS = pathS;
 				Runnable runnable = () -> {
 					try {
+						progressBar1.setVisible(true);
 						iniciarButton.setEnabled(false);
 						pasarJuego(finalPathS, comboDevices.getSelectedItem().toString());
 						iniciarButton.setEnabled(true);
@@ -86,7 +90,7 @@ public class MainMenu extends JFrame implements WindowListener {
 				thread = new Thread(runnable);
 				thread.start();
 			} else {
-				log("Debe ingresar un path para poder ejecutar");
+				JOptionPane.showMessageDialog(this, "Debe ingresar un path del juego válido", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 	}
@@ -101,9 +105,11 @@ public class MainMenu extends JFrame implements WindowListener {
 			Files.createFile(Path.of(basePath + "\\prueba.txt"));
 			Files.delete(Path.of(basePath + "\\prueba.txt"));
 		} catch (SecurityException e) {
+			JOptionPane.showMessageDialog(this, "No se tiene permisos para escribir/leer en el dispositivo. Asegúrese de que se tengan los permisos y vuelva a intentar", "Error", JOptionPane.ERROR_MESSAGE);
 			log("No se tiene permisos para escribir/leer en el dispositivo. Asegúrese de que se tengan los permisos y vuelva a intentar");
 			return;
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "Ocurrió un problema al escribir en el dispositivo, por favor intente con otro dispositivo o más tarde", "Error", JOptionPane.ERROR_MESSAGE);
 			log("Ocurrió un problema al escribir en el dispositivo, por favor intente con otro dispositivo o más tarde");
 			return;
 		}
@@ -137,6 +143,12 @@ public class MainMenu extends JFrame implements WindowListener {
 		}
 
 		log("Se van a transfererir " + fileAmount + " archivos con un peso total de " + fullGameSize.get() / 1000000000 + " GB");
+		long initialSizeInDevice = new File(device).getFreeSpace();
+		boolean isEnoughSpace = false;
+		if(fullGameSize.get() < initialSizeInDevice) {
+			isEnoughSpace = true;
+		}
+		boolean finalIsEnoughSpace = isEnoughSpace;
 		map.forEach((k, v) -> {
 			if(k.equals(basePath + "\\missing.txt")) return;
 			long sizeInDevice = new File(device).getFreeSpace();
@@ -156,10 +168,18 @@ public class MainMenu extends JFrame implements WindowListener {
 					long startFileTimestamp = Timestamp.valueOf(LocalDateTime.now()).getTime();
 					try{
 						Files.copy(Paths.get(k), Paths.get(pathS));
+						sizeInDevice = new File(device).getFreeSpace();
+						if(!finalIsEnoughSpace) {
+							progressBar1.setValue((int) (100 - ((100 * sizeInDevice) / initialSizeInDevice)));
+						} else {
+							progressBar1.setValue((int) (100 - ((100 * (fullGameSize.intValue() - (initialSizeInDevice - sizeInDevice))) / fullGameSize.intValue())));
+						}
+
 					} catch (FileAlreadyExistsException e) {
 						log("Ya existe el archivo " + pathS + " en el dispositivo destino. Salteando");
 					} catch(IOException e) {
 						log("Ocurrió un error al pasar el archivo " + pathS);
+						e.printStackTrace();
 					}
 					long endFileTimestamp = Timestamp.valueOf(LocalDateTime.now()).getTime();
 					log("Copiado ok: " + pathS + " en " + getTimestampElapsedTime(endFileTimestamp - startFileTimestamp));
@@ -176,9 +196,17 @@ public class MainMenu extends JFrame implements WindowListener {
 			log(getDate() + " - Escribiendo los archivos faltantes en disco para próxima ejecución");
 			Files.writeString(Paths.get(basePath + "\\missing.txt"), missingList.toString());
 		}
-		log(getDate() + " - Se terminó de transferir al dispositivo. Faltan transferir " + missingList.toString().split("\n").length + " archivos");
+
 		long endTimestamp = Timestamp.valueOf(LocalDateTime.now()).getTime();
-		log(getDate() + " - Duración total de la transferencia: " + getTimestampElapsedTime(endTimestamp - startTimestamp));
+		if(!missingList.toString().equalsIgnoreCase("")) {
+			JOptionPane.showMessageDialog(this, "Se terminó de transferir al dispositivo. Faltan transferir " + (missingList.toString().split("\\n").length - 1) + " archivos", "Ejecución finalizada", JOptionPane.INFORMATION_MESSAGE);
+			log("Se terminó de transferir al dispositivo. Faltan transferir " + (missingList.toString().split("\n").length - 1) + " archivos");
+		} else {
+			JOptionPane.showMessageDialog(this, "Se terminó de transferir al dispositivo. No hay más archivos para transferir. Operacion completada", "Ejecución finalizada", JOptionPane.INFORMATION_MESSAGE);
+			log("Se terminó de transferir al dispositivo. No hay más archivos para transferir. Operación completada");
+		}
+
+		log("Duración total de la transferencia: " + getTimestampElapsedTime(endTimestamp - startTimestamp));
 	}
 
 	private String getTimestampElapsedTime(long elapsedTime) {
