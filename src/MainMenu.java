@@ -210,5 +210,4 @@ public class MainMenu extends JFrame implements WindowListener {
 
 	@Override
 	public void windowDeactivated(WindowEvent e) {}
-
 }
