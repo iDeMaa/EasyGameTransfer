@@ -8,7 +8,7 @@ El motivo por el que se desarrolló el aplicativo es para evitar el enorme traba
 Ejecutar el aplicativo y cargar los campos requeridos, luego, presionar el botón **INICIAR**
 Una vez finalizada la ejecución, pasar los archivos del dispositivo externo a la otra computadora a la cuál se quiera pasar, y volver a ejecutar la aplicación las veces que sea necesaria para poder pasar el juego completo (el aplicativo indica una vez que ya no haga falta pasar ningún archivo)
 
-![image](https://user-images.githubusercontent.com/37516465/146691489-a5413113-4e44-451f-84c9-7fd02c9b2433.png)
+![image](https://user-images.githubusercontent.com/37516465/146694047-0229eaf5-42b3-44ba-ae9e-34c8483c6067.png)
 
 * *Dispositivo al cuál transferir*: Este campo representa el dispositivo al cuál se van a transferir los archivos del juego. Se busca en el sistema los discos o dispositivos disponbles, los cuales se cargan en el combo para la selección del usuario
 * *Path del juego*: En este campo se debe ingresar el path base del juego a pasar. Por ejemplo: *E:\Battle.net\Games\Call of Duty Modern Warfare*
