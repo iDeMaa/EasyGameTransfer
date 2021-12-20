@@ -79,10 +79,12 @@ public class MainMenu extends JFrame implements WindowListener {
 				String finalPathS = pathS;
 				Runnable runnable = () -> {
 					try {
+						progressBar1.setValue(0);
 						progressBar1.setVisible(true);
 						iniciarButton.setEnabled(false);
 						pasarJuego(finalPathS, comboDevices.getSelectedItem().toString());
 						iniciarButton.setEnabled(true);
+						progressBar1.setValue(100);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
