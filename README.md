@@ -21,7 +21,7 @@ En el campo *Log* se podrá ver la hora y fecha de cada paso del aplicativo, jun
   * En caso de que **sí** exista: Lee el archivo *missing.txt* y por cada línea, guarda el path del archivo y su peso en un mapa en memoria
 * Por cada archivo almacenado en el mapa:
   * Obtiene el espacio libre en el dispositivo
-    * En caso de que haya más espacio, guarda el path del archivo y el peso del mismo en una lista en memoria
+    * En caso de que **no** haya más espacio, guarda el path del archivo y el peso del mismo en una lista en memoria
     * En caso de que haya más espacio, copia el archivo al dispositivo
 * Una vez que termina de procesar todos los archivos:
   * Borra el archivo *missing.txt*, en caso de que exista
